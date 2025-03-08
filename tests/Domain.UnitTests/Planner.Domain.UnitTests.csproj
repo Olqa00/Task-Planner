@@ -8,12 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="8.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="MSTest" Version="3.6.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="FluentAssertions" />
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    <Using Include="Planner.Domain.Types" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,4 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Using Include="Planner.Domain.Types" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Planner.Domain.UnitTests" />
+  </ItemGroup>
+
 </Project>

@@ -161,8 +161,9 @@ coverage*.info
 _NCrunch_*
 .*crunch*.local.xml
 nCrunchTemp_*
-/src/CosmeticSalon.v3.ncrunchsolution
-/tests/CosmeticSalon.UnitTests.v3.ncrunchsolution
+Planner.v3.ncrunchsolution
+/src/Planner.v3.ncrunchsolution
+/tests/Planner.UnitTests.v3.ncrunchsolution
 
 # MightyMoose
 *.mm.*
