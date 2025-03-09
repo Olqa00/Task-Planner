@@ -10,10 +10,11 @@ public sealed class TaskEntity
     public bool IsCompleted => this.CompletedAt.HasValue;
     public string Title { get; private set; }
 
-    public TaskEntity(TaskId id, string title, DateTime createdAt)
+    public TaskEntity(TaskId id, string title, DateTime createdAt, DateTime? completedAt)
     {
         this.Id = id;
         this.CreatedAt = createdAt;
+        this.CompletedAt = completedAt;
         this.SetTitle(title);
     }
 
