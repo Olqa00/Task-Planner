@@ -18,7 +18,7 @@ public sealed class TaskEntityTests
     public void Complete_ThrowsException_WhenTaskCompletedBeforeCreation()
     {
         // Arrange
-        var task = new TaskEntity(TASK_ID, TASK_TITLE, CREATED_AT);
+        var task = new TaskEntity(TASK_ID, TASK_TITLE, CREATED_AT, completedAt: null);
 
         // Act
         var act = () => task.Complete(WRONG_DATE);
@@ -33,8 +33,7 @@ public sealed class TaskEntityTests
     public void Complete_ThrowsException_WhenTaskIsAlreadyCompleted()
     {
         // Arrange
-        var task = new TaskEntity(TASK_ID, TASK_TITLE, CREATED_AT);
-        task.Complete(COMPETED_AT);
+        var task = new TaskEntity(TASK_ID, TASK_TITLE, CREATED_AT, COMPETED_AT);
 
         // Act
         var act = () => task.Complete(COMPETED_AT);
@@ -49,7 +48,7 @@ public sealed class TaskEntityTests
     public void SetTitle_Should_ChangeTitle()
     {
         // Arrange
-        var task = new TaskEntity(TASK_ID, TASK_TITLE, CREATED_AT);
+        var task = new TaskEntity(TASK_ID, TASK_TITLE, CREATED_AT, completedAt: null);
 
         // Act
         var act = () => task.SetTitle(TASK_TITLE_2);
@@ -68,7 +67,7 @@ public sealed class TaskEntityTests
     public void SetTitle_ThrowsException_WhenTitleIsEmpty(string title)
     {
         // Arrange
-        var task = new TaskEntity(TASK_ID, TASK_TITLE, CREATED_AT);
+        var task = new TaskEntity(TASK_ID, TASK_TITLE, CREATED_AT, completedAt: null);
 
         // Act
         var act = () => task.SetTitle(title);
@@ -83,7 +82,7 @@ public sealed class TaskEntityTests
     public void UnComplete_Should_CompleteTask_WhenTaskCanBeCompleted()
     {
         // Arrange
-        var task = new TaskEntity(TASK_ID, TASK_TITLE, CREATED_AT);
+        var task = new TaskEntity(TASK_ID, TASK_TITLE, CREATED_AT, completedAt: null);
         task.Complete(COMPETED_AT);
 
         // Act
@@ -99,7 +98,7 @@ public sealed class TaskEntityTests
     public void UnComplete_ThrowsException_WhenTaskIsNotCompleted()
     {
         // Arrange
-        var task = new TaskEntity(TASK_ID, TASK_TITLE, CREATED_AT);
+        var task = new TaskEntity(TASK_ID, TASK_TITLE, CREATED_AT, completedAt: null);
 
         // Act
         var act = () => task.UnComplete();
