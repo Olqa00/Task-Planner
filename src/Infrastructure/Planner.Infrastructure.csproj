@@ -14,10 +14,12 @@
 
   <ItemGroup>
     <Using Include="Dapper" />
+    <Using Include="MediatR" />
     <Using Include="Microsoft.Data.SqlClient" />
     <Using Include="Microsoft.Extensions.Configuration" />
     <Using Include="Microsoft.Extensions.DependencyInjection" />
     <Using Include="Microsoft.Extensions.Hosting" />
+    <Using Include="Microsoft.Extensions.Logging" />
     <Using Include="Planner.Domain.Types" />
     <Using Include="System.Data" />
   </ItemGroup>
@@ -30,5 +32,6 @@
 
    <ItemGroup>
     <InternalsVisibleTo Include="Planner.Infrastructure.UnitTests" />
+    <InternalsVisibleTo Include="Planner.IntegrationTests" />
   </ItemGroup>
 </Project>

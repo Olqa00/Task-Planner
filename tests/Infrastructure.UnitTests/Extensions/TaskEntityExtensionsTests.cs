@@ -1,5 +1,6 @@
 ﻿namespace Planner.Infrastructure.UnitTests.Extensions;
 
+using Planner.Application.Results;
 using Planner.Domain.Entities;
 using Planner.Infrastructure.Extensions;
 using Planner.Infrastructure.Models;
@@ -7,7 +8,6 @@ using Planner.Infrastructure.Models;
 [TestClass]
 public sealed class TaskEntityExtensionsTests
 {
-    private const string NEW_TITLE = "new title";
     private const string TITLE_1 = "title-1";
     private const string TITLE_2 = "title-2";
     private static readonly DateTime COMPETED_AT = new(year: 2025, month: 03, day: 05, hour: 10, minute: 0, second: 0, DateTimeKind.Utc);
@@ -34,10 +34,34 @@ public sealed class TaskEntityExtensionsTests
         CreatedAt = CREATED_AT,
     };
 
+    private static readonly TaskResult TASK_RESULT_1 = new()
+    {
+        CompletedAt = COMPETED_AT,
+        CreatedAt = CREATED_AT,
+        Id = ID_GUID_1,
+        IsComplete = true,
+        Title = TITLE_1,
+    };
+
+    private static readonly TaskResult TASK_RESULT_2 = new()
+    {
+        CompletedAt = COMPETED_AT,
+        CreatedAt = CREATED_AT,
+        Id = ID_GUID_2,
+        IsComplete = true,
+        Title = TITLE_2,
+    };
+
     private static readonly IEnumerable<TaskDbEntity> TASK_DB_ENTITIES = new List<TaskDbEntity>
     {
         TASK_DB_ENTITY_1,
         TASK_DB_ENTITY_2,
+    };
+
+    private static readonly IEnumerable<TaskResult> TASK_RESULTS = new List<TaskResult>
+    {
+        TASK_RESULT_1,
+        TASK_RESULT_2,
     };
 
     private readonly TaskEntity taskEntity1;
@@ -65,6 +89,25 @@ public sealed class TaskEntityExtensionsTests
         // Assert
         result.Should()
             .BeEquivalentTo(TASK_DB_ENTITIES)
+            ;
+    }
+
+    [TestMethod]
+    public void ToResult_Should_ReturnTaskResults()
+    {
+        // Arrange
+        var entities = new List<TaskEntity>
+        {
+            this.taskEntity1,
+            this.taskEntity2,
+        };
+
+        // Act
+        var result = entities.ToResults();
+
+        // Assert
+        result.Should()
+            .BeEquivalentTo(TASK_RESULTS)
             ;
     }
 }

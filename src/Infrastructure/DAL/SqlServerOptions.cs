@@ -2,5 +2,5 @@
 
 internal sealed class SqlServerOptions
 {
-    public string ConnectionString { get; set; }
+    public string SqlConnection { get; set; }
 }

@@ -7,7 +7,6 @@ using Planner.Infrastructure.Models;
 [TestClass]
 public sealed class TaskDbEntityExtensionsTests
 {
-    private const string NEW_TITLE = "new title";
     private const string TITLE_1 = "title-1";
     private const string TITLE_2 = "title-2";
     private static readonly DateTime COMPETED_AT = new(year: 2025, month: 03, day: 05, hour: 10, minute: 0, second: 0, DateTimeKind.Utc);

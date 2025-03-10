@@ -8,6 +8,12 @@ using Planner.Infrastructure.Models;
 
 internal sealed class TaskRepository : ITaskRepository
 {
+    private const string DELETE_COMMAND =
+        """
+        DELETE FROM Task
+        WHERE Id = @Id
+        """;
+
     private const string GET_ALL_QUERY =
         """
         SELECT
@@ -54,30 +60,62 @@ internal sealed class TaskRepository : ITaskRepository
         WHERE Id = @Id
         """;
 
+    private readonly ILogger<TaskRepository> logger;
     private readonly SqlServerOptions options;
 
-    public TaskRepository(SqlServerOptions options)
+    public TaskRepository(ILogger<TaskRepository> logger, SqlServerOptions options)
     {
+        this.logger = logger;
         this.options = options;
     }
 
     public async Task AddTaskAsync(TaskEntity task)
     {
+        using var loggerScope = this.logger.BeginPropertyScope(
+            (nameof(TaskId), task.Id.Value)
+        );
+
+        this.logger.LogInformation("Try to add a task to db.");
+
         var dbModel = task.ToDbEntity();
 
-        using IDbConnection db = new SqlConnection(this.options.ConnectionString);
+        using IDbConnection db = new SqlConnection(this.options.SqlConnection);
 
         await db.ExecuteAsync(INSERT_COMMAND, dbModel);
     }
 
-    public async Task<TaskEntity?> GetByIdAsync(TaskId id)
+    public async Task DeleteAsync(TaskId id)
     {
+        using var loggerScope = this.logger.BeginPropertyScope(
+            (nameof(TaskId), id.Value)
+        );
+
+        this.logger.LogInformation("Try to delete task from db.");
+
         var parameters = new
         {
             Id = id.Value,
         };
 
-        using IDbConnection db = new SqlConnection(this.options.ConnectionString);
+        using IDbConnection db = new SqlConnection(this.options.SqlConnection);
+
+        await db.ExecuteAsync(DELETE_COMMAND, parameters);
+    }
+
+    public async Task<TaskEntity?> GetByIdAsync(TaskId id)
+    {
+        using var loggerScope = this.logger.BeginPropertyScope(
+            (nameof(TaskId), id.Value)
+        );
+
+        this.logger.LogInformation("Try to get task from db.");
+
+        var parameters = new
+        {
+            Id = id.Value,
+        };
+
+        using IDbConnection db = new SqlConnection(this.options.SqlConnection);
 
         var dbEntity = await db.QueryFirstOrDefaultAsync<TaskDbEntity>(GET_BY_ID_QUERY, parameters);
 
@@ -88,7 +126,9 @@ internal sealed class TaskRepository : ITaskRepository
 
     public async Task<IReadOnlyList<TaskEntity>> GetTasksAsync()
     {
-        using IDbConnection db = new SqlConnection(this.options.ConnectionString);
+        this.logger.LogInformation("Try to get tasks from db.");
+
+        using IDbConnection db = new SqlConnection(this.options.SqlConnection);
 
         var dbEntities = await db.QueryAsync<TaskDbEntity>(GET_ALL_QUERY);
 
@@ -99,6 +139,12 @@ internal sealed class TaskRepository : ITaskRepository
 
     public async Task UpdateAsync(TaskEntity task)
     {
+        using var loggerScope = this.logger.BeginPropertyScope(
+            (nameof(TaskId), task.Id.Value)
+        );
+
+        this.logger.LogInformation("Try to update task in db.");
+
         var parameters = new
         {
             Id = task.Id.Value,
@@ -106,7 +152,7 @@ internal sealed class TaskRepository : ITaskRepository
             task.CompletedAt,
         };
 
-        using IDbConnection db = new SqlConnection(this.options.ConnectionString);
+        using IDbConnection db = new SqlConnection(this.options.SqlConnection);
 
         await db.ExecuteAsync(UPDATE_COMMAND, parameters);
     }
