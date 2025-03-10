@@ -2,12 +2,13 @@
 
 public static class DependencyInjection
 {
-    private const string OPTIONS_SECTION_NAME = "ConnectionStrings";
+    private const string OPTIONS_SECTION_NAME = "SqlServer";
 
     public static IServiceCollection AddSqlServer(this IServiceCollection services, IConfiguration configuration)
     {
-        var section = configuration.GetSection(OPTIONS_SECTION_NAME);
-        services.Configure<SqlServerOptions>(section);
+        var options = configuration.GetSection(OPTIONS_SECTION_NAME).Get<SqlServerOptions>();
+        options ??= new SqlServerOptions();
+        services.AddSingleton(options);
 
         services.AddHostedService<DatabaseInitializer>();
 

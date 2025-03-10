@@ -1,7 +1,5 @@
 ﻿namespace Planner.Infrastructure.DAL;
 
-using Microsoft.Data.SqlClient;
-
 internal sealed class DatabaseInitializer : IHostedService
 {
     private const string CREATE_DATABASE = @"
