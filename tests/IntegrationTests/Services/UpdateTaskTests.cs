@@ -9,14 +9,16 @@ using Planner.Infrastructure;
 using Planner.Infrastructure.Services;
 
 [TestClass]
-public sealed class AddTaskTests
+public sealed class UpdateTaskTests
 {
+    private const string NEW_TITLE = "new task title";
     private const string TITLE = "task title";
+    private static readonly DateTime COMPLETED_AT = new(year: 2025, month: 04, day: 05, hour: 10, minute: 0, second: 0, DateTimeKind.Utc);
     private static readonly DateTime CREATED_AT = new(year: 2025, month: 03, day: 05, hour: 10, minute: 0, second: 0, DateTimeKind.Utc);
     private readonly IMediator mediator;
     private readonly ITaskRepository repository;
 
-    public AddTaskTests()
+    public UpdateTaskTests()
     {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -25,11 +27,13 @@ public sealed class AddTaskTests
 
         var serviceCollection = new ServiceCollection();
         var repositoryLogger = new NullLogger<TaskRepository>();
-        var handlerLogger = new NullLogger<AddTaskHandler>();
+        var addHandlerLogger = new NullLogger<AddTaskHandler>();
+        var updateHandlerLogger = new NullLogger<UpdateTaskHandler>();
         serviceCollection.AddApplication();
         serviceCollection.AddInfrastructure(configuration);
         serviceCollection.AddSingleton<ILogger<TaskRepository>>(repositoryLogger);
-        serviceCollection.AddSingleton<ILogger<AddTaskHandler>>(handlerLogger);
+        serviceCollection.AddSingleton<ILogger<AddTaskHandler>>(addHandlerLogger);
+        serviceCollection.AddSingleton<ILogger<UpdateTaskHandler>>(updateHandlerLogger);
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         this.mediator = serviceProvider.GetRequiredService<IMediator>();
@@ -37,28 +41,50 @@ public sealed class AddTaskTests
     }
 
     [TestMethod]
-    public async Task AddTask_WithValidData_ShouldReturnTask()
+    public async Task UpdateTask_WithValidData_ShouldReturnTask()
     {
         // Arrange
         var id = Guid.NewGuid();
         var taskId = new TaskId(id);
 
-        var command = new AddTask
+        var addCommand = new AddTask
         {
             CreatedAt = CREATED_AT,
             Id = id,
             Title = TITLE,
         };
 
+        var updateCommand = new UpdateTask
+        {
+            CompletedAt = COMPLETED_AT,
+            Id = id,
+            Title = NEW_TITLE,
+        };
+
+        await this.mediator.Send(addCommand, CancellationToken.None);
+        await Task.Delay(millisecondsDelay: 100, CancellationToken.None);
+
         // Act
-        await this.mediator.Send(command, CancellationToken.None);
+        await this.mediator.Send(updateCommand, CancellationToken.None);
         await Task.Delay(millisecondsDelay: 100, CancellationToken.None);
 
         // Assert
-        var taskEntity = await this.repository.GetByIdAsync(taskId);
+        var result = await this.repository.GetByIdAsync(taskId);
 
-        taskEntity.Should()
+        result.Should()
             .NotBeNull()
+            ;
+
+        result.Id.Should()
+            .BeEquivalentTo(taskId)
+            ;
+
+        result.Title.Should()
+            .BeEquivalentTo(NEW_TITLE)
+            ;
+
+        result.CompletedAt.Should()
+            .Be(COMPLETED_AT)
             ;
     }
 }

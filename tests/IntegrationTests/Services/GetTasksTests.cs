@@ -4,19 +4,19 @@ using Planner.Application;
 using Planner.Application.CommandHandlers;
 using Planner.Application.Commands;
 using Planner.Domain.Interfaces;
-using Planner.Domain.Types;
 using Planner.Infrastructure;
+using Planner.Infrastructure.QueryHandlers;
 using Planner.Infrastructure.Services;
 
 [TestClass]
-public sealed class AddTaskTests
+public sealed class GetTasksTests
 {
     private const string TITLE = "task title";
     private static readonly DateTime CREATED_AT = new(year: 2025, month: 03, day: 05, hour: 10, minute: 0, second: 0, DateTimeKind.Utc);
     private readonly IMediator mediator;
     private readonly ITaskRepository repository;
 
-    public AddTaskTests()
+    public GetTasksTests()
     {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -25,11 +25,13 @@ public sealed class AddTaskTests
 
         var serviceCollection = new ServiceCollection();
         var repositoryLogger = new NullLogger<TaskRepository>();
-        var handlerLogger = new NullLogger<AddTaskHandler>();
+        var addHandlerLogger = new NullLogger<AddTaskHandler>();
+        var getHandlerLogger = new NullLogger<GetTasksHandler>();
         serviceCollection.AddApplication();
         serviceCollection.AddInfrastructure(configuration);
         serviceCollection.AddSingleton<ILogger<TaskRepository>>(repositoryLogger);
-        serviceCollection.AddSingleton<ILogger<AddTaskHandler>>(handlerLogger);
+        serviceCollection.AddSingleton<ILogger<AddTaskHandler>>(addHandlerLogger);
+        serviceCollection.AddSingleton<ILogger<GetTasksHandler>>(getHandlerLogger);
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         this.mediator = serviceProvider.GetRequiredService<IMediator>();
@@ -37,11 +39,10 @@ public sealed class AddTaskTests
     }
 
     [TestMethod]
-    public async Task AddTask_WithValidData_ShouldReturnTask()
+    public async Task GetTasks_WithValidData_ShouldReturnTasks()
     {
         // Arrange
         var id = Guid.NewGuid();
-        var taskId = new TaskId(id);
 
         var command = new AddTask
         {
@@ -50,15 +51,19 @@ public sealed class AddTaskTests
             Title = TITLE,
         };
 
-        // Act
         await this.mediator.Send(command, CancellationToken.None);
         await Task.Delay(millisecondsDelay: 100, CancellationToken.None);
 
-        // Assert
-        var taskEntity = await this.repository.GetByIdAsync(taskId);
+        // Act
+        var taskEntities = await this.repository.GetTasksAsync();
+        await Task.Delay(millisecondsDelay: 100, CancellationToken.None);
 
-        taskEntity.Should()
-            .NotBeNull()
+        // Assert
+        taskEntities
+            .Should()
+            .NotBeEmpty()
+            .And
+            .Contain(task => task.Id.Value == id && task.Title == TITLE && task.CreatedAt == CREATED_AT)
             ;
     }
 }

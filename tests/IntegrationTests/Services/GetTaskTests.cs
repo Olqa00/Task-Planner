@@ -6,17 +6,18 @@ using Planner.Application.Commands;
 using Planner.Domain.Interfaces;
 using Planner.Domain.Types;
 using Planner.Infrastructure;
+using Planner.Infrastructure.QueryHandlers;
 using Planner.Infrastructure.Services;
 
 [TestClass]
-public sealed class AddTaskTests
+public sealed class GetTaskTests
 {
     private const string TITLE = "task title";
     private static readonly DateTime CREATED_AT = new(year: 2025, month: 03, day: 05, hour: 10, minute: 0, second: 0, DateTimeKind.Utc);
     private readonly IMediator mediator;
     private readonly ITaskRepository repository;
 
-    public AddTaskTests()
+    public GetTaskTests()
     {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -25,11 +26,13 @@ public sealed class AddTaskTests
 
         var serviceCollection = new ServiceCollection();
         var repositoryLogger = new NullLogger<TaskRepository>();
-        var handlerLogger = new NullLogger<AddTaskHandler>();
+        var addHandlerLogger = new NullLogger<AddTaskHandler>();
+        var getHandlerLogger = new NullLogger<GetTaskHandler>();
         serviceCollection.AddApplication();
         serviceCollection.AddInfrastructure(configuration);
         serviceCollection.AddSingleton<ILogger<TaskRepository>>(repositoryLogger);
-        serviceCollection.AddSingleton<ILogger<AddTaskHandler>>(handlerLogger);
+        serviceCollection.AddSingleton<ILogger<AddTaskHandler>>(addHandlerLogger);
+        serviceCollection.AddSingleton<ILogger<GetTaskHandler>>(getHandlerLogger);
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         this.mediator = serviceProvider.GetRequiredService<IMediator>();
@@ -37,7 +40,7 @@ public sealed class AddTaskTests
     }
 
     [TestMethod]
-    public async Task AddTask_WithValidData_ShouldReturnTask()
+    public async Task GetTask_WithValidData_ShouldReturnTask()
     {
         // Arrange
         var id = Guid.NewGuid();
@@ -50,13 +53,14 @@ public sealed class AddTaskTests
             Title = TITLE,
         };
 
-        // Act
         await this.mediator.Send(command, CancellationToken.None);
         await Task.Delay(millisecondsDelay: 100, CancellationToken.None);
 
-        // Assert
+        // Act
         var taskEntity = await this.repository.GetByIdAsync(taskId);
+        await Task.Delay(millisecondsDelay: 100, CancellationToken.None);
 
+        // Assert
         taskEntity.Should()
             .NotBeNull()
             ;

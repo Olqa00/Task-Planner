@@ -9,14 +9,14 @@ using Planner.Infrastructure;
 using Planner.Infrastructure.Services;
 
 [TestClass]
-public sealed class AddTaskTests
+public sealed class DeleteTaskTests
 {
     private const string TITLE = "task title";
     private static readonly DateTime CREATED_AT = new(year: 2025, month: 03, day: 05, hour: 10, minute: 0, second: 0, DateTimeKind.Utc);
     private readonly IMediator mediator;
     private readonly ITaskRepository repository;
 
-    public AddTaskTests()
+    public DeleteTaskTests()
     {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -25,11 +25,13 @@ public sealed class AddTaskTests
 
         var serviceCollection = new ServiceCollection();
         var repositoryLogger = new NullLogger<TaskRepository>();
-        var handlerLogger = new NullLogger<AddTaskHandler>();
+        var addHandlerLogger = new NullLogger<AddTaskHandler>();
+        var deleteHandlerLogger = new NullLogger<DeleteTaskHandler>();
         serviceCollection.AddApplication();
         serviceCollection.AddInfrastructure(configuration);
         serviceCollection.AddSingleton<ILogger<TaskRepository>>(repositoryLogger);
-        serviceCollection.AddSingleton<ILogger<AddTaskHandler>>(handlerLogger);
+        serviceCollection.AddSingleton<ILogger<AddTaskHandler>>(addHandlerLogger);
+        serviceCollection.AddSingleton<ILogger<DeleteTaskHandler>>(deleteHandlerLogger);
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         this.mediator = serviceProvider.GetRequiredService<IMediator>();
@@ -37,28 +39,36 @@ public sealed class AddTaskTests
     }
 
     [TestMethod]
-    public async Task AddTask_WithValidData_ShouldReturnTask()
+    public async Task DeleteTask_WithValidData_ShouldReturnTask()
     {
         // Arrange
         var id = Guid.NewGuid();
         var taskId = new TaskId(id);
 
-        var command = new AddTask
+        var addCommand = new AddTask
         {
             CreatedAt = CREATED_AT,
             Id = id,
             Title = TITLE,
         };
 
+        var deleteCommand = new DeleteTask
+        {
+            Id = id,
+        };
+
+        await this.mediator.Send(addCommand, CancellationToken.None);
+        await Task.Delay(millisecondsDelay: 100, CancellationToken.None);
+
         // Act
-        await this.mediator.Send(command, CancellationToken.None);
+        await this.mediator.Send(deleteCommand);
         await Task.Delay(millisecondsDelay: 100, CancellationToken.None);
 
         // Assert
-        var taskEntity = await this.repository.GetByIdAsync(taskId);
+        var task = await this.repository.GetByIdAsync(taskId);
 
-        taskEntity.Should()
-            .NotBeNull()
+        task.Should()
+            .BeNull()
             ;
     }
 }
