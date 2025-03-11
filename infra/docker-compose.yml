@@ -12,7 +12,7 @@ services:
     container_name: sql_planner
     image: mcr.microsoft.com/mssql/server:2019-CU11-ubuntu-20.04
     environment:
-      - SA_PASSWORD=Pass@word
+      - SA_PASSWORD=${SA_PASSWORD:-Pass@word}
       - ACCEPT_EULA=Y
     ports:
       - "5435:1433"
